@@ -40,6 +40,100 @@ endif()
 set(LUA_SRC_PATH lua-${LUA_VERSION}/src)
 set(LUAJIT_SRC_PATH luajit-2.1.0b3/src)
 
+#######################################################
+### begin thirdpart library
+#begin cjson
+set ( CJSON_SRC
+    3rd/lua-cjson/lua_cjson.c
+    3rd/lua-cjson/fpconv.c
+    3rd/lua-cjson/strbuf.c
+)
+set_property(
+    SOURCE ${CJSON_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC 3rd/lua-cjson)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${CJSON_SRC})
+#end cjson
+
+#begin lpeg
+set ( LPEG_SRC
+    3rd/lpeg/lpcap.c
+    3rd/lpeg/lpcode.c
+    3rd/lpeg/lpprint.c
+    3rd/lpeg/lptree.c
+    3rd/lpeg/lpvm.c
+)
+set_property(
+    SOURCE ${LPEG_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC 3rd/lpeg)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${LPEG_SRC})
+#end lpeg
+
+#begin lua-profobuf
+set (LPB_SRC 
+    3rd/lua-protobuf/pb.c
+)
+set_property(
+    SOURCE ${LPB_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC 3rd/lua-protobuf)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${LPB_SRC})
+#end lua-protobuf
+
+#begin lua-rapidjson
+set (RAPIDJSON_SRC 3rd/lua-rapidjson/source/rapidjson.cpp)
+set_property(
+	SOURCE ${RAPIDJSON_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
+)
+list(APPEND THIRDPART_INC 3rd/lua-rapidjson/include)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${RAPIDJSON_SRC})
+#end lua-rapidjson
+
+#begin skynet.crypt
+set (SKYNET_CRYPT_SRC 
+    3rd/skynet/crypt/lua-crypt.c
+    3rd/skynet/crypt/lsha1.c
+)
+set_property(
+	SOURCE ${SKYNET_CRYPT_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
+)
+list(APPEND THIRDPART_INC 3rd/skynet/crypt)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${SKYNET_CRYPT_SRC})
+#end skynet.crypt
+
+#begin sproto
+set (SPROTO_SRC 
+    3rd/sproto/sproto.c
+    3rd/sproto/lsproto.c
+)
+set_property(
+	SOURCE ${SPROTO_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
+)
+list(APPEND THIRDPART_INC 3rd/sproto)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${SPROTO_SRC})
+#end sproto
+### end thirdpart library
+
+
 if (USING_LUAJIT)
 	
     if (APPLE AND NOT IOS AND NOT ANDROID)
@@ -172,11 +266,11 @@ if (APPLE)
             add_library(xlua MODULE
                 ${LUA_CORE}
                 ${LUA_LIB}
-                ${LUA_SOCKET}
-                ${XLUA_CORE}
-                ${THIRDPART_SRC}
-            )
-            set_target_properties ( xlua PROPERTIES BUNDLE TRUE )
+            ${LUA_SOCKET}
+            ${XLUA_CORE}
+            ${THIRDPART_SRC}
+        )
+        set_target_properties ( xlua PROPERTIES BUNDLE TRUE )
             #set_target_properties ( xlua PROPERTIES FRAMEWORK TRUE )
             #set_target_properties ( xlua PROPERTIES MACOSX_RPATH TRUE )
         endif ()
