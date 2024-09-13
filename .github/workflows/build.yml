@@ -25,15 +25,8 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_lua54/**/*
-          name: plugin_lua54
-          overwrite: true
-      - name: Upload53
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua53/**/*
-          name: plugin_lua53 
-          overwrite: true
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
 
   android_luajit:
     runs-on: ubuntu-latest
@@ -51,14 +44,11 @@ jobs:
           cd build
           sudo apt install gcc-multilib libncurses5 -y
           ./make_android_luajit_arm64.sh  
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-      - name: UploadJit
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_luajit/**/*
-          name: plugin_luajit
-          overwrite: true
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
   
   ohos:
     runs-on: ubuntu-latest
@@ -81,15 +71,8 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_lua54/**/*
-          name: plugin_lua54
-          overwrite: true
-      - name: Upload53
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua53/**/*
-          name: plugin_lua53
-          overwrite: true
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
 
   linux:
     runs-on: ubuntu-latest
@@ -104,21 +87,9 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_lua54/**/*
-          name: plugin_lua54
-          overwrite: true
-      - name: Upload53
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua53/**/*
-          name: plugin_lua53   
-          overwrite: true
-      - name: UploadJit
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_luajit/**/*
-          name: plugin_luajit  
-          overwrite: true
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
+
   ios:
     runs-on: macos-latest
 
@@ -133,52 +104,28 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_lua54/**/*
-          name: plugin_lua54
-          overwrite: true
-      - name: Upload53
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua53/**/*
-          name: plugin_lua53   
-          overwrite: true
-      - name: UploadJit
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_luajit/**/*
-          name: plugin_luajit
-          overwrite: true
-  osx:
-    runs-on: macos-11
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
 
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cd build
-          ./make_osx_lua54.sh
-          ./make_osx_lua53.sh
-          ./make_osx_luajit.sh
-          ./make_osx_silicon_lua53.sh
-          ./make_osx_silicon_lua54.sh
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua54/**/*
-          name: plugin_lua54
-          overwrite: true
-      - name: Upload53
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua53/**/*
-          name: plugin_lua53   
-          overwrite: true
-      - name: UploadJit
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_luajit/**/*
-          name: plugin_luajit  
-          overwrite: true
+  #osx:
+  #  runs-on: macos-11
+  #  timeout-minutes: 10
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #    - name: Build
+  #      run: |
+  #        cd build
+  #        ./make_osx_lua54.sh
+  #        ./make_osx_lua53.sh
+  #        ./make_osx_luajit.sh
+  #        ./make_osx_silicon_lua53.sh
+  #        ./make_osx_silicon_lua54.sh
+  #    - name: Upload
+  #      uses: actions/upload-artifact@v4
+  #      with:
+  #        path: ./build/plugin_lua*
+  #        name: ${{github.job}}
+
   windows:
     runs-on: windows-2019
 
@@ -204,21 +151,8 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_lua54/**/*
-          name: plugin_lua54
-          overwrite: true
-      - name: Upload53
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_lua53/**/*
-          name: plugin_lua53   
-          overwrite: true
-      - name: UploadJit
-        uses: actions/upload-artifact@v4
-        with:
-          path: ./build/plugin_luajit/**/*
-          name: plugin_luajit
-          overwrite: true
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
           
   windows-luajit-32:
     runs-on: windows-2019
@@ -236,12 +170,28 @@ jobs:
         run: |
           cd build
           .\make_win32_luajit.bat  
-      - name: UploadJit
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/plugin_luajit/**/*
-          name: plugin_luajit
-          overwrite: true
-    
+          path: ./build/plugin_lua*
+          name: ${{github.job}}
 
+  merge:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - android
+      - android_luajit
+      - ohos
+      - linux
+      - ios
+      - windows
+      - windows-luajit-32
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: xlua-plugin
+          delete-merged: true
+          retention-days: 1
    
