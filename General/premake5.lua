@@ -41,34 +41,6 @@ links
     "System.Core",
 }
 
-project "XLuaGenerate"
-language "C#"
-kind "ConsoleApp"
-framework "4.0"
-targetdir "./Tools"
-
-files
-{
-    "./Src/XLuaGenerate.cs",
-    "./Src/XLuaTemplates.Designer.cs",
-    "./Src/XLuaTemplates.resx",
-    "../Assets/XLua/Src/Editor/Generator.cs",
-    "../Assets/XLua/Src/Editor/Template/*.txt",
-}
-
-defines
-{
-    "XLUA_GENERAL",
-    "XLUA_ALL_OBSOLETE",
-}
-
-links
-{
-    "System",
-    "System.Core",
-    "XLua.Mini",
-}
-
 project "XLuaHotfixInject"
 language "C#"
 kind "ConsoleApp"
@@ -95,49 +67,6 @@ links
     "Lib/Mono.Cecil.dll",
     "Lib/Mono.Cecil.Mdb.dll",
     "Lib/Mono.Cecil.Pdb.dll",
-}
-
-
-project "KeyPairsGen"
-language "C#"
-kind "ConsoleApp"
-framework "3.5"
-targetdir "./Tools"
-
-files
-{
-    "./Src/KeyPairsGen.cs",
-}
-
-defines
-{
-}
-
-links
-{
-    "System",
-    "System.Core",
-}
-
-project "FilesSignature"
-language "C#"
-kind "ConsoleApp"
-framework "3.5"
-targetdir "./Tools"
-
-files
-{
-    "./Src/FilesSignature.cs",
-}
-
-defines
-{
-}
-
-links
-{
-    "System",
-    "System.Core",
 }
 
 project "XLuaTest"

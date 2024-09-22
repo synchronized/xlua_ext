@@ -23,11 +23,14 @@ namespace CSObjectWrapEditor
 {
     public static class GeneratorConfig
     {
-#if XLUA_GENERAL
-        public static string common_path = "./Gen/";
-#else
-        public static string common_path = Application.dataPath + "/XLua/Gen/";
-#endif
+        public static string gen_root_path = Application.dataPath + "/XLua";
+
+        public static string common_path {
+            get { return  $"{gen_root_path}/Gen/Csharp/"; }
+        }
+        public static string gen_lua_path {
+            get { return $"{gen_root_path}/Gen/Lua"; }
+        }
 
         static GeneratorConfig()
         {
@@ -39,11 +42,7 @@ namespace CSObjectWrapEditor
                 {
                     if (field.FieldType == typeof(string) && field.IsDefined(typeof(GenPathAttribute), false))
                     {
-                        common_path = field.GetValue(null) as string;
-                        if (!common_path.EndsWith("/"))
-                        {
-                            common_path = common_path + "/";
-                        }
+                        gen_root_path = field.GetValue(null) as string;
                     }
                 }
 
@@ -51,14 +50,14 @@ namespace CSObjectWrapEditor
                 {
                     if (prop.PropertyType == typeof(string) && prop.IsDefined(typeof(GenPathAttribute), false))
                     {
-                        common_path = prop.GetValue(null, null) as string;
-                        if (!common_path.EndsWith("/"))
-                        {
-                            common_path = common_path + "/";
-                        }
+                        gen_root_path = prop.GetValue(null, null) as string;
                     }
                 }
             }
+            gen_root_path = LuaTools.GetRegularPath(gen_root_path);
+
+            //去掉最后的斜杠
+            if (gen_root_path.EndsWith("/")) gen_root_path = gen_root_path.Substring(0, gen_root_path.Length-1);
         }
     }
 
@@ -629,7 +628,7 @@ namespace CSObjectWrapEditor
 
         static void GenEnumWrap(IEnumerable<Type> types, string save_path)
         {
-            string filePath = save_path + "EnumWrap.cs";
+            string filePath = $"{save_path}/EnumWrap.cs";
             StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
             
             GenOne(null, (type, type_info) =>
@@ -654,8 +653,8 @@ namespace CSObjectWrapEditor
             foreach (var wrap_type in types)
             {
                 if (!wrap_type.IsInterface) continue;
-
-                string filePath = save_path + NonmalizeName(wrap_type.ToString()) + "Bridge.cs";
+                var fileName = NonmalizeName(wrap_type.ToString());
+                string filePath = $"{save_path}/{fileName}Bridge.cs";
                 StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
                 GenOne(wrap_type, (type, type_info) =>
                 {
@@ -902,7 +901,7 @@ namespace CSObjectWrapEditor
 
         static void GenDelegateBridge(IEnumerable<Type> types, string save_path, IEnumerable<Type> hotfix_check_types)
         {
-            string filePath = save_path + "DelegatesGensBridge.cs";
+            string filePath = $"{save_path}/DelegatesGensBridge.cs";
             StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
             types = types.Where(type => !type.GetMethod("Invoke").GetParameters().Any(paramInfo => paramInfo.ParameterType.IsGenericParameter));
             var hotfxDelegates = new List<MethodInfoSimulation>();
@@ -966,7 +965,7 @@ namespace CSObjectWrapEditor
 
         static void GenWrapPusher(IEnumerable<Type> types, string save_path)
         {
-            string filePath = save_path + "WrapPusher.cs";
+            string filePath = $"{save_path}/WrapPusher.cs";
             StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
             var emptyMap = new Dictionary<Type, Type>();
             GenOne(typeof(ObjectTranslator), (type, type_info) =>
@@ -1001,7 +1000,8 @@ namespace CSObjectWrapEditor
 
             foreach (var wrap_type in types)
             {
-                string filePath = save_path + NonmalizeName(wrap_type.ToString()) + "Wrap.cs";
+                var fileName = NonmalizeName(wrap_type.ToString());
+                string filePath = $"{save_path}/{fileName}Wrap.cs";
                 StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
                 if (wrap_type.IsEnum)
                 {
@@ -1115,7 +1115,7 @@ namespace CSObjectWrapEditor
 
             var itf_bridges = CSharpCallLua.Where(t => t.IsInterface);
 
-            string filePath = GeneratorConfig.common_path + "XLuaGenAutoRegister.cs";
+            string filePath = GeneratorConfig.common_path + "/XLuaGenAutoRegister.cs";
             StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
 
             var lookup = LuaCallCSharp.Distinct().ToDictionary(t => t);
@@ -1259,7 +1259,7 @@ namespace CSObjectWrapEditor
                 });
             }
 
-            string filePath = save_path + "PackUnpack.cs";
+            string filePath = $"{save_path}/PackUnpack.cs";
             StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8);
             GenOne(typeof(CopyByValue), (type, type_info) =>
             {
@@ -1650,13 +1650,6 @@ namespace CSObjectWrapEditor
         [MenuItem("XLua/Generate Code", false, 1)]
         public static void GenAll()
         {
-#if UNITY_2018 && (UNITY_EDITOR_WIN || UNITY_EDITOR_OSX)
-            if (File.Exists("./Tools/MonoBleedingEdge/bin/mono.exe"))
-            {
-                GenUsingCLI();
-                return;
-            }
-#endif
             var start = DateTime.Now;
             Directory.CreateDirectory(GeneratorConfig.common_path);
             GetGenConfig(XLua.Utils.GetAllTypes());
@@ -1673,63 +1666,6 @@ namespace CSObjectWrapEditor
             Debug.Log("finished! use " + (DateTime.Now - start).TotalMilliseconds + " ms");
             AssetDatabase.Refresh();
         }
-
-#if UNITY_EDITOR_OSX || UNITY_EDITOR_WIN
-        public static void GenUsingCLI()
-        {
-#if UNITY_EDITOR_OSX
-            var monoPath = "./Tools/MonoBleedingEdge/bin/mono";
-#else
-            var monoPath = "./Tools/MonoBleedingEdge/bin/mono.exe";
-#endif
-
-            var args = new List<string>()
-            {
-                "./Tools/XLuaGenerate.exe",
-                "./Library/ScriptAssemblies/Assembly-CSharp.dll",
-                "./Library/ScriptAssemblies/Assembly-CSharp-Editor.dll",
-                GeneratorConfig.common_path
-            };
-
-            var searchPaths = new List<string>();
-            foreach (var path in
-                (from asm in AppDomain.CurrentDomain.GetAssemblies() select asm.ManifestModule.FullyQualifiedName)
-                 .Distinct())
-            {
-                try
-                {
-                    searchPaths.Add(Path.GetDirectoryName(path));
-                }
-                catch { }
-            }
-            args.AddRange(searchPaths.Distinct());
-
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = monoPath;
-            process.StartInfo.Arguments = "\"" + string.Join("\" \"", args.ToArray()) + "\"";
-            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
-
-            while (!process.StandardError.EndOfStream)
-            {
-                Debug.LogError(process.StandardError.ReadLine());
-            }
-
-            while (!process.StandardOutput.EndOfStream)
-            {
-                Debug.Log(process.StandardOutput.ReadLine());
-            }
-
-            process.WaitForExit();
-            GetGenConfig(XLua.Utils.GetAllTypes());
-            callCustomGen();
-            AssetDatabase.Refresh();
-        }
-#endif
 
         [MenuItem("XLua/Clear Generated Code", false, 2)]
         public static void ClearAll()
