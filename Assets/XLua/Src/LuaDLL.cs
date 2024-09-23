@@ -459,6 +459,9 @@ namespace XLua.LuaDLL
 #if (!UNITY_SWITCH && !UNITY_WEBGL) || UNITY_EDITOR
         [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int luaopen_socket_core(IntPtr L);//[,,m]
+
+        [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int luaopen_mime_core(IntPtr L);//[,,m]
 #endif
 
         [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]

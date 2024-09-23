@@ -23,41 +23,11 @@ namespace CSObjectWrapEditor
 {
     public static class GeneratorConfig
     {
-        public static string gen_root_path = Application.dataPath + "/XLua";
 
         public static string common_path {
-            get { return  $"{gen_root_path}/Gen/Csharp/"; }
-        }
-        public static string gen_lua_path {
-            get { return $"{gen_root_path}/Gen/Lua"; }
-        }
-
-        static GeneratorConfig()
-        {
-            foreach(var type in (from type in XLua.Utils.GetAllTypes()
-            where type.IsAbstract && type.IsSealed
-            select type))
-            {
-                foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-                {
-                    if (field.FieldType == typeof(string) && field.IsDefined(typeof(GenPathAttribute), false))
-                    {
-                        gen_root_path = field.GetValue(null) as string;
-                    }
-                }
-
-                foreach (var prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
-                {
-                    if (prop.PropertyType == typeof(string) && prop.IsDefined(typeof(GenPathAttribute), false))
-                    {
-                        gen_root_path = prop.GetValue(null, null) as string;
-                    }
-                }
+            get { 
+                return XLuaConfig.GenCSPath ; 
             }
-            gen_root_path = LuaTools.GetRegularPath(gen_root_path);
-
-            //去掉最后的斜杠
-            if (gen_root_path.EndsWith("/")) gen_root_path = gen_root_path.Substring(0, gen_root_path.Length-1);
         }
     }
 
@@ -75,11 +45,6 @@ namespace CSObjectWrapEditor
     }
 
     public class GenCodeMenuAttribute : Attribute
-    {
-
-    }
-
-    public class GenPathAttribute : Attribute
     {
 
     }

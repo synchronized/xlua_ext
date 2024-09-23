@@ -642,6 +642,12 @@ namespace XLua
         {
             return LuaAPI.luaopen_socket_core(L);
         }
+
+        [MonoPInvokeCallback(typeof(LuaCSFunction))]
+        internal static int LoadMimeCore(RealStatePtr L)
+        {
+            return LuaAPI.luaopen_mime_core(L);
+        }
 #endif
 
         [MonoPInvokeCallback(typeof(LuaCSFunction))]

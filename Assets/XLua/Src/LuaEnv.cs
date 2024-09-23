@@ -114,6 +114,7 @@ namespace XLua
 #if (!UNITY_SWITCH && !UNITY_WEBGL) || UNITY_EDITOR
                 AddBuildin("socket.core", StaticLuaCallbacks.LoadSocketCore);
                 AddBuildin("socket", StaticLuaCallbacks.LoadSocketCore);
+                AddBuildin("mime.core", StaticLuaCallbacks.LoadMimeCore);
 #endif
 
                 AddBuildin("CS", StaticLuaCallbacks.LoadCS);

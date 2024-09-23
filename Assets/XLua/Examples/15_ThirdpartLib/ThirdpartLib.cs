@@ -41,6 +41,11 @@ namespace XLuaTest
             luaenv.DoString("require 'crypt'");
             luaenv.DoString("require 'sproto.core'");
             luaenv.Dispose();
+
+            UnityEngine.Debug.Log("XLuaConfig.RootPath:"+XLuaConfig.RootPath);
+            UnityEngine.Debug.Log("XLuaConfig.GenCSPath:"+XLuaConfig.GenCSPath);
+            UnityEngine.Debug.Log("XLuaConfig.GenLuaPath:"+XLuaConfig.GenLuaPath);
+            UnityEngine.Debug.Log("XLuaConfig.AssetGenLuaPath:"+XLuaConfig.AssetGenLuaPath);
         }
 
         // Update is called once per frame
